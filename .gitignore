@@ -1,0 +1,4 @@
+debug/*
+token.txt
+databases/*
+__pycache__/*
