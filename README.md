@@ -4,3 +4,8 @@ Is work in progress. Right now I am running through it games from a database to 
 
 Lets see how it goes!
 
+Using Lichess API: docs https://berserk.readthedocs.io/en/master/
+
+
+TODO:
+Check if castle is legal

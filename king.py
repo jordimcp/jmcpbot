@@ -56,13 +56,13 @@ class King(Piece):
           step_c = -1
           r = 0
           c = -1        
-      if (current_row + r > 7) or (current_row + r < 0) or (current_col + c > 7) or (current_row + c < 0):
-        keep = False                  
+      if (current_row + r > 7) or (current_row + r < 0) or (current_col + c > 7) or (current_col + c < 0):
+        keep = False        
       else:          
         pot_piece = position[current_row + r][current_col + c]      
         if pot_piece.name == 'Empty':
           self.boxes_to_move.append([current_row + r, current_col+c])        
-        elif (pot_piece.color != self.color) and (pot_piece.name != 'Empty') :
+        elif (pot_piece.color != self.color) and (pot_piece.name != 'Empty')  and (pot_piece.is_defended(position) == False):
           self.boxes_to_move.append([current_row + r, current_col+c])        
           keep = False
         else:
@@ -139,11 +139,9 @@ class King(Piece):
                   keep = False
                 elif pot_piece.color != self.color and (pot_piece.name == 'Queen' or pot_piece.name == 'Bishop' \
                     or (pot_piece.name == 'Pawn' and  step_r*direction > 0)or (pot_piece.name == 'King')):
-                  in_check = True 
-                  f = open ("debug/text.txt", "w")
-                  f.write("Check\n")                  
-                  f.write(pot_piece.name+ ' ' + str(pot_piece.box[0]) + str(pot_piece.box[1]))
-                  f.close()
+                  in_check = True                   
+                  keep = False
+                else:
                   keep = False
               else:
                 if pot_piece.name == 'Empty':
@@ -151,8 +149,15 @@ class King(Piece):
                 elif pot_piece.color == self.color:
                   keep = False
                 elif (pot_piece.color != self.color) and ((pot_piece.name == 'Queen') or (pot_piece.name == 'Bishop')):
-                  in_check = True                       
+                  in_check = True   
+                  f = open ("debug/text.txt", "w")
+                  f.write("Check\n")                  
+                  f.write(pot_piece.name+ ' ' + str(pot_piece.box[0]) + str(pot_piece.box[1]))
+                  f.close()                    
                   keep = False
+                else:
+                  keep = False
+
             elif(j >= 4): #vertical and horizontal
               if ((r == 1) or (r == -1)) or ((c == 1) or (c == -1)):
                 if pot_piece.name == 'Empty':
@@ -162,6 +167,8 @@ class King(Piece):
                 elif (pot_piece.color != self.color) and ((pot_piece.name == 'Queen') or (pot_piece.name == 'Rook') or (pot_piece.name == 'King')):
                   in_check = True
                   keep = False
+                else:
+                  keep = False
               else:
                 if pot_piece.name == 'Empty':
                   pass
@@ -169,6 +176,8 @@ class King(Piece):
                   keep = False                
                 elif pot_piece.color != self.color and ((pot_piece.name == 'Queen') or (pot_piece.name == 'Rook')):
                   in_check = True                  
+                  keep = False
+                else:
                   keep = False
           r += step_r
           c += step_c  

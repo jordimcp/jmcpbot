@@ -19,6 +19,7 @@ class Board():
     self.position = []
     self.moves = 0
     self.init_board()
+    self.opponent_move = []
 
   def debug_msg(self,txt):
     f = open(self.filename, "a",newline='')
@@ -137,6 +138,9 @@ class Board():
       f.write("  \n")                
     f.close()
 
+  def set_opponent_move(self,opponent_move):    
+    self.opponent_move = self.decode_move(opponent_move)
+
   def decode_move(self,move):
     c_orig = self.column[move[0]]
     r_orig = int(move[1])-1
@@ -148,8 +152,7 @@ class Board():
     move_d = self.decode_move(move)    
     if len(move) > 4: #TODO: Check if legal
       legal = True
-      promot = move[4]
-      self.update_board(move)      
+      promot = move[4]    
     else:
       legal = self.is_legal_move(move_d)    
     return legal
@@ -157,26 +160,44 @@ class Board():
   def update_board(self,move):    
     print("Updating board..")    
     move_d = self.decode_move(move)    
+    piece = self.position[move_d[0]][move_d[1]]
+    togo = self.position[move_d[2]][move_d[3]]
     if len(move) > 4:
       empty = Empty('None',move_d[0:2])
       self.position[move_d[0]][move_d[1]] = empty
       if move[4] == 'q':
-        self.position[move_d[2]][move_d[3]] = Queen(self.bot_color,[move_d[2],move_d[3]])
+        self.position[move_d[2]][move_d[3]] = Queen(piece.color,[move_d[2],move_d[3]])
       elif move[4] == 'b':
-        self.position[move_d[2]][move_d[3]] = Bishop(self.bot_color,[move_d[2],move_d[3]])
+        self.position[move_d[2]][move_d[3]] = Bishop(piece.color,[move_d[2],move_d[3]])
       elif move[4] == 'n':
-        self.position[move_d[2]][move_d[3]] = Knight(self.bot_color,[move_d[2],move_d[3]])
+        self.position[move_d[2]][move_d[3]] = Knight(piece.color,[move_d[2],move_d[3]])
       elif move[4] == 'r':
-        self.position[move_d[2]][move_d[3]] = Rook(self.bot_color,[move_d[2],move_d[3]])
-    else:
-      piece = self.position[move_d[0]][move_d[1]]
+        self.position[move_d[2]][move_d[3]] = Rook(piece.color,[move_d[2],move_d[3]])
+    else:      
       piece.move(move_d)              
       #Updating position of our king
       if piece.name == 'King' and piece.color == self.bot_color:
         self.king_pos = move_d[2:]
       #Castle  
-      if (piece.name == 'King') and abs(move_d[1] - move_d[3]) == 2:
-        self.castle(move_d,piece)
+      if (piece.name == 'King') and (togo.name == 'Rook'):
+      #if (piece.name == 'King') and abs(move_d[1] - move_d[3]) == 2:
+        way = self.castle(move_d,piece)
+        if piece.color == self.bot_color:
+          if way == "short":
+            self.king_pos = [move_d[0],6]
+          else:
+            self.king_pos = [move_d[0],2]
+      #Al paso
+      elif (piece.name == 'Pawn') and ((move_d[1] - move_d[3]) != 0) and (self.position[move_d[2]][move_d[3]].name == 'Empty'):
+        empty = Empty('None',move_d[0:2])
+        self.position[move_d[0]][move_d[1]] = empty
+        if piece.color == 'b':
+          empty = Empty('None',[move_d[2]+1,move_d[3]])
+          self.position[move_d[2]+1][move_d[3]] = empty
+        else:
+          empty = Empty('None',[move_d[2]-1,move_d[3]])
+          self.position[move_d[2]-1][move_d[3]] = empty
+        self.position[move_d[2]][move_d[3]] = piece
       else:
         empty = Empty('None',move_d[0:2])
         self.position[move_d[0]][move_d[1]] = empty
@@ -195,28 +216,32 @@ class Board():
     return self.position
 
   def castle(self,move_d,piece):
+    way = "short"
     king = piece    
-    self.position[move_d[0]][move_d[1]] = Empty('None',move_d[:2])
-    self.position[move_d[2]][move_d[3]] = king
-    if move_d[3] == 6:
+    self.position[move_d[0]][move_d[1]] = Empty('None',move_d[:2])    
+    if move_d[3] > 4:
       print("short castle")
-      rook = self.position[move_d[0]][7]
-      rook_move = [move_d[0],7,move_d[0],5]      
-      self.position[move_d[0]][7] = Empty('None',[0,7])
+      rook = self.position[move_d[2]][move_d[3]]
+      rook_move = [move_d[2],move_d[3],move_d[0],5]      
+      self.position[move_d[2]][move_d[3]] = Empty('None',[move_d[2],move_d[3]])
       self.position[move_d[0]][5] = rook
       rook.move(rook_move)
-    elif move_d[3] == 2:
+      self.position[move_d[2]][6] = king
+    elif move_d[3] < 4:
+      way = "long"
       print("long castle")
-      rook = self.position[move_d[0]][0]        
-      rook_move = [move_d[0],0,move_d[0],3]
-      self.position[move_d[0]][0] = Empty('None',[0,0])
-      self.position[move_d[0]][3] = rook
+      rook = self.position[move_d[2]][move_d[3]]
+      rook_move = [move_d[2],move_d[3],move_d[0],3]
+      self.position[move_d[2]][move_d[3]] = Empty('None',[move_d[2],move_d[3]])
+      self.position[move_d[0]][3] = rook      
       rook.move(rook_move)
-        
+      self.position[move_d[2]][2] = king
+    return way
 
   def is_legal_move(self,move_d):
     legal = False
     piece = self.position[move_d[0]][move_d[1]]    
+    togo = self.position[move_d[2]][move_d[3]]
     print(piece.name, piece.box)
     if piece.name == 'Empty':      
       #print("There was no piece..")        
@@ -224,14 +249,22 @@ class Board():
     elif piece.color != self.bot_color:      
       #print("Opponents piece..")  
       pass
-    elif (piece.name == 'King') and abs(move_d[1] - move_d[3]) == 2:
+    elif (piece.name == 'King') and (togo.name == 'Rook') and (togo.color == self.bot_color): #and abs(move_d[1] - move_d[3]) == 2:
       print("*****************************CASTLE")
+      # if rook and king did not move yet
+      # if no pieces in the way
+      # if no check between rook and king
       legal = True
       #legal = self.castle(move_d)
-    else:                  
-      allowed_moves = piece.get_allowed_moves(self.position)      
+    else:   
+      if piece.name != 'Pawn':               
+        allowed_moves = piece.get_allowed_moves(self.position)
+      else:
+        allowed_moves = piece.get_allowed_moves(self.position,self.opponent_move)
+
       print(allowed_moves)
       piece.clear_allowed_moves()
+      paso = False
       for i in range(len(allowed_moves)):
         if (allowed_moves[i][0] == move_d[2]) and ((allowed_moves[i][1] == move_d[3])):      
           pot_pos = self.make_potential_move(move_d)          
@@ -240,17 +273,12 @@ class Board():
             tmp_king_pos = king.box
           else:
             king = piece
-            tmp_king_pos = move_d[2:]
-          
-          print("NAME: ",king.name, self.king_pos)
+            tmp_king_pos = move_d[2:]          
+          #print("NAME: ",king.name, self.king_pos)
           if king.in_check(pot_pos,tmp_king_pos) == False:
             #print("Origin", pot_pos[move_d[0]][move_d[1]].name)
-            print("Destin",move_d[2],move_d[3])
+            #print("Destin",move_d[2],move_d[3])            
             legal = True
-            #piece.move(move_d)              
-            #self.king_pos = tmp_king_pos         
-            #if (piece.name == 'King') and (piece.color == self.bot_color):
-            #  self.king_pos = move_d
             break
           else:
             print("******************CHECK!")

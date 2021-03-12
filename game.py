@@ -28,6 +28,7 @@ class Game(threading.Thread):
       if ko == 1:
         self.client.bots.resign_game(self.game_id)    
         break
+        
   def move(self,opponent_move):
     print("Opponent move: ", opponent_move)
     bot_move = self.mybot.make_decision(opponent_move)   
