@@ -12,7 +12,7 @@ class Game(threading.Thread):
         self.mybot = Bot("jmcpbot", self.game_info['color'])
         self.stream = self.client.bots.stream_game_state(game_id)
         self.current_state = next(self.stream)
-
+    
     def run(self):
         # if self.game_info['isMyTurn']:
         #    self.move()

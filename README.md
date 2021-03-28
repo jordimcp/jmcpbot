@@ -8,4 +8,5 @@ Using Lichess API: docs https://berserk.readthedocs.io/en/master/
 
 
 TODO:
-Check if castle is legal
+Manage checkmate from lichess
+

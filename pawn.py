@@ -17,7 +17,8 @@ class Pawn(Piece):
 
     allow_al_paso = False
     opp_piece = position[opponent_move[2]][opponent_move[3]]
-    if (opp_piece.name == 'Pawn' ) and (abs(opponent_move[0] - opponent_move[2]) == 2) and ((abs(opp_piece.box[1] - current_col) == 1)):      
+    print("Opp piece:", opp_piece.name, opponent_move, current_row)
+    if (opp_piece.name == 'Pawn' ) and (abs(opponent_move[0] - opponent_move[2]) == 2) and (abs(opp_piece.box[1] - current_col) == 1) and (opponent_move[2] == current_row): 
       allow_al_paso = True      
        
     ways_to_check = 3 

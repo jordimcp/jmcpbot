@@ -3,6 +3,7 @@ from pygame.locals import *
 import sys
 import random
 from board import *
+from mybot import *
 Aqua = (0, 255, 255)
 Black = (0,   0,   0)
 Blue = (0,  0, 255)
@@ -21,7 +22,9 @@ class Tablero():
     def make(self, w, h):
         pygame.init()
         pygame.font.init()
-        self.board = Board('b')
+        self.game_id = 1234
+        self.bot = Bot(self.game_id, 'b') 
+        self.board = Board(self.bot.get_color())
         title = "Chessboard"
         pygame.display.set_caption(title)
         self.dis_w = w
@@ -68,8 +71,12 @@ class Tablero():
         for col in range(8):
             piece = self.getPosGui(num, col, position)
             if piece.name != 'Empty':
+                if piece.color == 'w':
+                    color_letter = Green
+                else:
+                    color_letter = Gray
                 textsurface = myfont.render(
-                    piece.color + piece.name[0], 1, Gray)
+                    piece.color + piece.name[0], 1, color_letter)
                 self.display.blit(textsurface, (square, num*self.strokeH))
             square = self.strokeW*(col+1)
         pygame.display.update()
@@ -104,8 +111,12 @@ class Tablero():
                 # position[num][col]
                 piece = self.getPosGui(num, col, position)
                 if piece.name != 'Empty':
+                    if piece.color == 'w':
+                        color_letter = Green
+                    else:
+                        color_letter = Gray
                     textsurface = myfont.render(
-                        piece.color + piece.name[0], 1, Gray)
+                        piece.color + piece.name[0], 1, color_letter)
                     self.display.blit(textsurface, (square, num*self.strokeH))
                 square = self.strokeW*(col+1)
         pygame.display.update()
@@ -127,7 +138,6 @@ class Tablero():
         if piece.name != 'Pawn':
             moves = piece.get_allowed_moves(position)
         else:
-            print("LAST MOVE", self.last_move)
             moves = piece.get_allowed_moves(position, self.last_move)
         piece.clear_allowed_moves()
         self.legalMoves(moves)
@@ -162,31 +172,38 @@ class Tablero():
         self.clicking = not self.clicking
         if self.clicking:
             self.grabbed_piece, self.legal_moves = self.get_piece(row, col)
-            print(self.grabbed_piece.name + self.grabbed_piece.color)
+            if self.grabbed_piece.color == 'w':
+                print(self.grabbed_piece.name + self.grabbed_piece.color)
+            else:
+                print("DONT TOUCH MY PIECES Mate")
         else:
             if self.grabbed_piece.color == 'w':
                 move = [7-row, col]
-                print("Move from gui",move)
+                print(move)
                 if move in self.legal_moves:
                     self.last_move = [self.grabbed_piece.box[0],
                                       self.grabbed_piece.box[1], move[0], move[1]]
                     move_str = self.drop_piece(7-row, col, self.grabbed_piece)
-                    #move_d = [7-row,col,self.grabbed_piece.box[0]-1,self.grabbed_piece.box[1]]
-                    #self.board.is_legal_move(move_d)
-                    #print("move => ", move_d)
                     self.board.set_opponent_move(move_str)
+                    bot_move = self.bot.make_decision(move_str)
+                    self.board.set_opponent_move(bot_move)
+                    self.board.update_board(bot_move)
+                    #self.last_move = [self.grabbed_piece.box[0],
+                    #                  self.grabbed_piece.box[1], move[0], move[1]]
+                    self.makeGrid()
                 else:
                     print("Illegal")
+                #move = [self.grabbed_piece.box[0],
+                #        self.grabbed_piece.box[1], 7-row, col]
+                #print("Black move: ", move)
+                #if self.board.is_legal_move(move):
+                #    self.last_move = [self.grabbed_piece.box[0],
+                #                      self.grabbed_piece.box[1], move[0], move[1]]
+                #    move_str = self.drop_piece(7-row, col, self.grabbed_piece)
+                #else:
+                #    print("Illegal")
             else:
-                move = [self.grabbed_piece.box[0],
-                        self.grabbed_piece.box[1], 7-row, col]
-                print("Black move: ", move)
-                if self.board.is_legal_move(move):
-                    self.last_move = [self.grabbed_piece.box[0],
-                                      self.grabbed_piece.box[1], move[2], move[3]]
-                    move_str = self.drop_piece(7-row, col, self.grabbed_piece)
-                else:
-                    print("Illegal")
+                print("Bot says: Don't touck my piece")
 
 
 if __name__ == "__main__":

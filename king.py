@@ -30,6 +30,9 @@ class King(Piece):
         elif self.in_check(position,self.box):
             short_allowed = False
             long_allowed = False
+        elif self.moved == True:
+            short_allowed  = False
+            long_allowed = False
         else:
             if (self.moved == True) or (short_rook.moved == True):
                 short_allowed = False
