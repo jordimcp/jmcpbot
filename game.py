@@ -18,17 +18,22 @@ class Game(threading.Thread):
         #    self.move()
         for event in self.stream:
             ko = 0
+            finish = False
             print(event)
             if event['type'] == 'gameState':
-                self.handle_state_change(event)
+                #print(type(event['moves']))
+                move_list = event['moves'].split(' ')
+                finish = self.handle_state_change(event)
             elif event['type'] == 'chatLine':
                 ko = self.handle_chat_line(event)
-            self.game_info = self.client.games.get_ongoing()[0]
-            if self.game_info['isMyTurn']:
-                self.move(self.game_info['lastMove'])
-            if ko == 1:
-                self.client.bots.resign_game(self.game_id)
-                break
+            if not finish:
+                self.game_info = self.client.games.get_ongoing()[0]
+                #print("Game Info: ", self.game_info)
+                if self.game_info['isMyTurn']:
+                    self.move(self.game_info['lastMove'])
+                if ko == 1:
+                    self.client.bots.resign_game(self.game_id)
+                    break
 
     def move(self, opponent_move):
         print("Opponent move: ", opponent_move)
@@ -36,12 +41,15 @@ class Game(threading.Thread):
         print("Jmcpbot move: ", bot_move)
         self.client.bots.make_move(self.game_id, bot_move)
 
-    def handle_state_change(self, game_state):
-        pass
+    def handle_state_change(self, event):
+        gamefinished = False
+        if event['status'] == 'mate':
+            gamefinished = True
+        return gamefinished
 
     def handle_chat_line(self, chat_line):
         ko = 0
-        if(chat_line['username'] != "jmcpbot"):
+        if(chat_line['username'] != "jmcpgeh"):
             if(chat_line['text'] != "abort"):
                 self.client.bots.post_message(
                     self.game_id, 'Here we are! Lets do this!', spectator=False)

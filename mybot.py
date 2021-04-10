@@ -5,7 +5,7 @@ from board import *
 from test import *
 import pickle
 import chess
-
+from random import randrange
 
 class Bot():
     def __init__(self, bot_id, color):
@@ -87,7 +87,6 @@ class Bot():
         col = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
         row = [1, 2, 3, 4, 5, 6, 7, 8]
         found = False
-        self.tmp_board.push(chess.Move.from_uci(opponent_move))
         fen = self.tmp_board.fen()
         self.board_from_fen(fen)
         ngame = 0
@@ -113,7 +112,6 @@ class Bot():
                 print("Bot move => ",bot_move)
                 legal = self.board.is_legal(bot_move)
                 self.board.update_board(bot_move)
-                self.tmp_board.push(chess.Move.from_uci(bot_move))
             else:
                 bot_move = self.move_whatever_legal(opponent_move)
         return bot_move
@@ -121,22 +119,22 @@ class Bot():
     def move_whatever_legal(self, opponent_move):
         col = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
         row = [1, 2, 3, 4, 5, 6, 7, 8]
-        # f = open("debug/black_moves.txt","r")
-        # result = f.read()
-        # moves = result.split("\n")
-        # bot_move = "move"
-        # if self.turn >= len(moves)-1:
-        #  print("Game FINISHED no more moves")
-        # else:
-        # bot_move = moves[self.turn]
-        # print("Black moves", bot_move)
-        # self.turn += 1
+        i_row = randrange(8)
+        i_col = randrange(8)
         legal = False
-        # legal = self.board.is_legal(bot_move)
         for c in range(8):
+            i_col += 1
+            if i_col ==8:
+                i_col = 0
             for r in range(8):
-                c_o = col[c]
-                r_o = str(row[r])
+                #c_o = col[c]
+                #r_o = str(row[r])
+                c_o = col[i_col]
+                i_row += 1
+                if i_row == 8:
+                    i_row = 0
+                r_o = str(row[i_row])
+                print("Checking move: ", r_o, c_o)
                 for i in range(8):
                     for k in range(8):
                         c_f = col[i]
@@ -152,7 +150,7 @@ class Bot():
             if legal:
                 break
         if legal:
-            print(bot_move)
+            print("Bot legal move is:", bot_move)
             self.board.update_board(bot_move)
             # f.close()
         else:
@@ -165,10 +163,14 @@ class Bot():
         return bot_move
 
     def make_decision(self, opponent_move):
+        print("Opponents move: ", opponent_move)
         self.board.set_opponent_move(opponent_move)
         self.board.update_board(opponent_move)
+        self.tmp_board.push(chess.Move.from_uci(opponent_move))
         #bot_move = self.move_whatever_legal(opponent_move)
         bot_move = self.from_jmcp(opponent_move)
+        self.tmp_board.push(chess.Move.from_uci(bot_move))
+        print("Final bot move is: ", bot_move)
         return bot_move
 
 

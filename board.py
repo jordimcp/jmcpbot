@@ -168,6 +168,8 @@ class Board():
         piece = self.position[move_d[0]][move_d[1]]
         togo = self.position[move_d[2]][move_d[3]]
         if len(move) > 4:
+            print("Promotion!!!!!!")
+            self.debug_msg("Pawn being promoted")
             empty = Empty('None', move_d[0:2])
             self.position[move_d[0]][move_d[1]] = empty
             if move[4] == 'q':
@@ -259,7 +261,6 @@ class Board():
         legal = False
         piece = self.position[move_d[0]][move_d[1]]
         togo = self.position[move_d[2]][move_d[3]]
-       #print(piece.name, piece.box)
         if piece.name == 'Empty':
             #print("There was no piece..")
             pass
@@ -268,10 +269,10 @@ class Board():
             pass
         # and abs(move_d[1] - move_d[3]) == 2:
         elif (piece.name == 'King') and (togo.name == 'Rook') and (togo.color == self.bot_color):
-            print("*****************************CASTLE")
-            short_allowed, long_allowed = piece.is_castle_allowed(self, self.position)
+            print("CASTLE")
+            short_allowed, long_allowed = piece.is_castle_allowed(self.position)
             self.short_castle_allowed = short_allowed
-            self.long_castle_allowed = long_castle_allowed
+            self.long_castle_allowed = long_allowed
             if (move_d[3] > 5) and (short_allowed == True):
                 legal = True
             if (move_d[3] < 5) and (long_allowed == True):
@@ -280,11 +281,9 @@ class Board():
             if piece.name != 'Pawn':
                 allowed_moves = piece.get_allowed_moves(self.position)
             else:
-                allowed_moves = piece.get_allowed_moves(
-                    self.position, self.opponent_move)
-
-            print(allowed_moves)
+                allowed_moves = piece.get_allowed_moves(self.position, self.opponent_move)
             piece.clear_allowed_moves()
+            print("Piece considered: ", piece.name, allowed_moves)
             paso = False
             for i in range(len(allowed_moves)):
                 if (allowed_moves[i][0] == move_d[2]) and ((allowed_moves[i][1] == move_d[3])):
@@ -302,7 +301,6 @@ class Board():
                         legal = True
                         break
                     else:
-                        print("******************CHECK!")
                         self.print_potential_board(pot_pos)
                         self.debug_msg("******************")
                         self.debug_msg("CHECK!")

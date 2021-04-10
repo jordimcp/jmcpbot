@@ -162,6 +162,12 @@ class Tablero():
                     move = 'e1a1' #lichess annotation for castle
                 else:
                     move = 'e8a8' #lichess annotation for castle
+        if piece.name == "Pawn":
+            if move[3] == '8' and piece.color == 'w':
+                move += 'q' #Auto queen
+            if move[3] == '1' and piece.color == 'b':
+                move += 'q'
+
         print(move)
         self.board.update_board(move)
         self.makeGrid()
