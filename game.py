@@ -30,7 +30,9 @@ class Game(threading.Thread):
                 self.game_info = self.client.games.get_ongoing()[0]
                 #print("Game Info: ", self.game_info)
                 if self.game_info['isMyTurn']:
-                    self.move(self.game_info['lastMove'])
+                    opp_move = move_list[-1]
+                    #self.move(self.game_info['lastMove'])
+                    self.move(opp_move)
                 if ko == 1:
                     self.client.bots.resign_game(self.game_id)
                     break

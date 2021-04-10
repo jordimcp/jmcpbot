@@ -8,8 +8,7 @@ Using Lichess API: docs https://berserk.readthedocs.io/en/master/
 
 
 TODO:
-Manage checkmate from lichess
 Castle and Promotion from FEN.
-Promotion from bot
+Promotion from bot move
 Way of checking castle and al paso are ok?
 generate FEN annotation 
